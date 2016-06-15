@@ -9,6 +9,7 @@ def analyze(text_input, analyzer_options):
 
     input_to_file(text_input)
     option_string = create_options_string(analyzer_options)
+    print (option_string)
     # run("analyze " + option_string+ "--output json <input.txt >json.txt", universal_newlines=True, shell=True)
     json_output = run("analyze " + option_string+ "--output json <input.txt", stdout = PIPE, universal_newlines=True, shell=True)
     return json_output.stdout
