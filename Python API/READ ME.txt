@@ -1,0 +1,92 @@
+Instructions on how to use the freeling python API
+
+Installation:
+
+You need: -Python 3.5
+	  -Flask package for python
+	  -Freeling Application http://nlp.lsi.upc.edu/freeling/node/30
+		- Linux instalation guide: https://talp-upc.gitbooks.io/freeling-user-manual/content/installation.html
+		- Windows instalation guide:https://github.com/TALP-UPC/FreeLing/blob/master/msvc/README
+
+1) Make sure that in freeling bin folder there is one analyzer.exe and analyze.bat (you might need to rename analyzeR.bat to analyze.bat)
+2) Add a copy of en.cfg and es.cfg from freeling/data/config to freeling/bin
+2) Make sure that freeling/bin is in the PATH environment variable.
+
+MAKE sure that analyze works. Go to a folder where you copied en.cfg and create a document input.txt. Write in input.txt some text.
+Run the following command:
+analyze -f en.cfg <input.txt
+
+This should show at the terminal some lines with the text in input.txt analyzed. If it does not work, then the freeling analyzer still needs to be configured.
+---------------------------------------------------------------------------------------------------------------------------------------------
+How to use it:
+
+The following comand should start the local "server"
+python <hci-project_dir>/"freeling api"/main.py
+
+Then use a tool such as Google Chrome REST Console extention to test it.
+In order to have a meanigfull result there is need for 2 requests: POST and GET.
+ALWAYS make a POST before a GET.
+
+With the POST you set the text that is to be analyzed. Example:
+Request URL: http://localhost:5000/freeling/text
+Request method: POST
+Body Content-Type: application/json
+Raw body: {"text":"My mom does not want me to buy a beer. But I bought 4 anyway."}
+
+This should give out the result: "Sucsessfully uploaded text."
+
+With the get method you send the parameters of the text processing and recieve the result of the processing. Example:
+Note: for some reason, now "loads" function has some problems in decoding a json to a dict so I will make the example to recieve a json
+
+
+Request URL: http://localhost:5000/freeling/analyze/tagged/en/1/1/1/1/1/1/1
+Request method: GET
+Accept Content-Type: application/json
+
+For the previous example in post this should give what is wroute in output.exe. (due to its size, I decided to keep these instruction simpler and less convoluted).
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+How it works:
+
+There are 4 python files: main.py, functions.py, Options.py, dict2table.py.
+
+1) dict2table.py: is just a function I found on the internet that generates an html table from a python dict.
+		  does not work really well.
+
+2) Options.py: just a struct we use to store an pass around the options needed to analyze the text.
+		(a bit redundant, but eh)
+
+3) main.py: the main function. This function needs to be run and it starts the Flask app.
+
+The main URL of the app is http://localhost:5000
+@app.route associates another URL to the app, and calls the following function when the request is recieved. Example:
+
+@app.route('/math/sum/<int:a>/<int:b>
+def sum(a,b):
+    ...
+    return res
+
+When the request with the URL http://localhost:5000/math/sum/1/2 is recieved the function sum(1,2) will be called and the requester will recieve res in response.
+Note: <int: a> represents a variable, and the name ("a") should be the same in the url declaration as in the function declaration.
+
+there are 2 main functions in main.py: get_analysis and post_text.
+	a) get_analysis is the function called when the GET request described above is called.
+	    it sets the Options parameters then calls analyze function from functions.py that returns the analyzed text as a json and returns the json.
+	    The parameters that should be given after /freeling/analyze are the following:
+	    output_type/language/number_recognition/datetime_recognition/quantities_ratios_percentages/named_entity_detection/named_entity_classification/multiword_detection/phoneting_encoding
+
+	b) post_text is the function called when the POST request described above is called.
+	    it just extracts the text from the json given in the body and sets the text in the global variable "text".
+
+
+4) functions.py: here is where freeling is used to analyze text, given the options.
+
+The ideea is that the analyse function automatically calls analyze program through a command line.
+The "run" function runs a command as if it were given to the terminal and returns it's stdout.
+
+Note 1: The analyze application needs to take the text from a file, that's why input_to_file function is used to write the input text to a input.txt file.
+
+Note 2: the run function takes a command line as a string. But the command line for calling analyze is different because of the different options we might want when analyzing the text.
+	that's why, this string needs to be constructed. Specifically, the function create_options_string is used to create the part of the string that sets the different options to give to analyze.
+
+

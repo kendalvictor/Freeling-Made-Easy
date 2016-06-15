@@ -22,10 +22,8 @@ def get_analysis(output_type,language,numr,dtr,qrp,ner,nec,mwd,phe):
     options = Options(output_type, language, numr, dtr, qrp, ner, nec, mwd, phe)
     json_output = analyze(text, options)
 
-    # dict = loads(json_output)
-    # html_table = dict2table(dict)
-    # parse the outpu
-    # parsed = parse(output, options)
+    # dictitonary = loads(json_output)
+    # html_table = dict2table(dictitonary)
 
     #return the json with the result
     return json_output
